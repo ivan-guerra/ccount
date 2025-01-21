@@ -1,0 +1,13 @@
+[package]
+name = "ccount"
+version = "0.1.0"
+edition = "2021"
+description = "Count characters in a string (including Unicode)"
+license = "Unlicense"
+
+[dependencies]
+# Command line argument parsing
+clap = {version = "4.5.27", features = ["derive"]}
+
+# For sorting the output
+itertools = "0.14.0"
