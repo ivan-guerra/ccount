@@ -20,10 +20,28 @@ struct Args {
     show_percent_freq: bool,
 
     #[arg(short = 'n', long, help = "Show only the top N characters")]
-    show_top_n: Option<u32>,
-    // TODO: Add option to print only the characters that appear more than N times.
-    // TODO: Add option to print only the characters that appear less than N times.
-    // TODO: Add option to print only the characters that appear exactly N times.
+    show_top_n: Option<usize>,
+
+    #[arg(
+        short = 'g',
+        long,
+        help = "Show only the characters that appear more than N times"
+    )]
+    show_more_than_n: Option<usize>,
+
+    #[arg(
+        short = 'l',
+        long,
+        help = "Show only the characters that appear less than N times"
+    )]
+    show_less_than_n: Option<usize>,
+
+    #[arg(
+        short = 'e',
+        long,
+        help = "Show only the characters that appear exactly N times"
+    )]
+    show_exactly_n: Option<usize>,
     // TODO: Make a single enum type that captures all these print styles.
 }
 
@@ -69,7 +87,22 @@ fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         }
     } else if args.show_top_n.is_some() {
         let n = args.show_top_n.unwrap();
-        for (char, count) in counter.take(n as usize) {
+        for (char, count) in counter.take(n) {
+            println!("{}: {}", char, count);
+        }
+    } else if args.show_more_than_n.is_some() {
+        let n = args.show_more_than_n.unwrap();
+        for (char, count) in counter.filter(|(_, count)| *count > &n) {
+            println!("{}: {}", char, count);
+        }
+    } else if args.show_less_than_n.is_some() {
+        let n = args.show_less_than_n.unwrap();
+        for (char, count) in counter.filter(|(_, count)| *count < &n) {
+            println!("{}: {}", char, count);
+        }
+    } else if args.show_exactly_n.is_some() {
+        let n = args.show_exactly_n.unwrap();
+        for (char, count) in counter.filter(|(_, count)| *count == &n) {
             println!("{}: {}", char, count);
         }
     } else {
