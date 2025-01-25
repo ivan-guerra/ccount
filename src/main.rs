@@ -10,7 +10,14 @@ struct Args {
 
     #[arg(short, long, help = "Sort by character or count")]
     sort_by: Option<SortBy>,
-    // TODO: Add option to print percentage of each character.
+
+    #[arg(
+        short = 'p',
+        long,
+        default_value_t = false,
+        help = "Show percentage of each character"
+    )]
+    show_percent_freq: bool,
     // TODO: Add option to print only the top N characters.
     // TODO: Add option to print only the characters that appear more than N times.
     // TODO: Add option to print only the characters that appear less than N times.
@@ -45,14 +52,23 @@ fn create_counter(text: &str) -> HashMap<char, usize> {
 fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let text = read_text(args.text)?;
     let counter = create_counter(&text);
-    counter
-        .iter()
-        .sorted_by(|a, b| match args.sort_by {
-            Some(SortBy::Char) => a.0.cmp(b.0),
-            Some(SortBy::Count) => b.1.cmp(a.1),
-            None => a.0.cmp(b.0),
-        })
-        .for_each(|(c, count)| println!("{}: {}", c, count));
+    let counter = counter.iter().sorted_by(|a, b| match args.sort_by {
+        Some(SortBy::Char) => a.0.cmp(b.0),
+        Some(SortBy::Count) => b.1.cmp(a.1),
+        None => a.0.cmp(b.0),
+    });
+
+    if args.show_percent_freq {
+        let total = counter.clone().map(|(_, count)| count).sum::<usize>() as f64;
+        for (char, count) in counter {
+            let percent = (*count as f64 / total) * 100.0;
+            println!("{}: {:.2}", char, percent);
+        }
+    } else {
+        for (char, count) in counter {
+            println!("{}: {}", char, count);
+        }
+    }
 
     Ok(())
 }
