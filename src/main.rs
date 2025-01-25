@@ -1,7 +1,34 @@
+//! A character frequency counter command-line tool.
+//!
+//! This module provides functionality to analyze text and count character frequencies.
+//! It supports various options for sorting and filtering the results, including:
+//!
+//! - Sorting by character or frequency count
+//! - Displaying frequency as percentages
+//! - Showing only top N most frequent characters
+//! - Filtering characters by frequency thresholds
+//! - Full Unicode support for non-ASCII text analysis
+//!
+//! # Example
+//! ```bash
+//! $ echo "hello world" | charfreq --sort-by count
+//! l: 3
+//! o: 2
+//! h: 1
+//! e: 1
+//! w: 1
+//! r: 1
+//! d: 1
+//! ```
+//!
+//! The tool can read input either from command line arguments or standard input,
+//! making it flexible for various use cases including pipeline operations.
+//! Unicode support means it can analyze text in any language or script system.
 use clap::{Parser, ValueEnum};
 use itertools::Itertools;
 use std::{collections::HashMap, io::Read};
 
+#[doc(hidden)]
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
@@ -42,15 +69,17 @@ struct Args {
         help = "Show only the characters that appear exactly N times"
     )]
     show_exactly_n: Option<usize>,
-    // TODO: Make a single enum type that captures all these print styles.
 }
 
+#[doc(hidden)]
 #[derive(Debug, Clone, ValueEnum)]
 enum SortBy {
     Char,
     Count,
 }
 
+/// Reads text input from either a provided string or standard input.
+#[doc(hidden)]
 fn read_text(text: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
     match text {
         Some(text) => Ok(text),
@@ -62,6 +91,8 @@ fn read_text(text: Option<String>) -> Result<String, Box<dyn std::error::Error>>
     }
 }
 
+/// Creates a histogram of character frequencies from the input text.
+#[doc(hidden)]
 fn create_counter(text: &str) -> HashMap<char, usize> {
     let mut counter = HashMap::new();
     text.chars()
@@ -70,6 +101,7 @@ fn create_counter(text: &str) -> HashMap<char, usize> {
     counter
 }
 
+#[doc(hidden)]
 fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let text = read_text(args.text)?;
     let counter = create_counter(&text);
@@ -114,6 +146,7 @@ fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[doc(hidden)]
 fn main() {
     let args = Args::parse();
     if let Err(e) = run(args) {
