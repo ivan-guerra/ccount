@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use itertools::Itertools;
 use std::{collections::HashMap, io::Read};
 
@@ -7,12 +7,20 @@ use std::{collections::HashMap, io::Read};
 struct Args {
     #[arg(help = "Input text")]
     text: Option<String>,
-    // TODO: Add option to sort in ascending/descending by character or count.
+
+    #[arg(short, long, help = "Sort by character or count")]
+    sort_by: Option<SortBy>,
     // TODO: Add option to print percentage of each character.
     // TODO: Add option to print only the top N characters.
     // TODO: Add option to print only the characters that appear more than N times.
     // TODO: Add option to print only the characters that appear less than N times.
     // TODO: Add option to print only the characters that appear exactly N times.
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+enum SortBy {
+    Char,
+    Count,
 }
 
 fn read_text(text: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
@@ -39,7 +47,11 @@ fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let counter = create_counter(&text);
     counter
         .iter()
-        .sorted_by_key(|(_, count)| std::cmp::Reverse(*count))
+        .sorted_by(|a, b| match args.sort_by {
+            Some(SortBy::Char) => a.0.cmp(b.0),
+            Some(SortBy::Count) => b.1.cmp(a.1),
+            None => a.0.cmp(b.0),
+        })
         .for_each(|(c, count)| println!("{}: {}", c, count));
 
     Ok(())
