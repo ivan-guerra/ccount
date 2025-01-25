@@ -18,10 +18,13 @@ struct Args {
         help = "Show percentage of each character"
     )]
     show_percent_freq: bool,
-    // TODO: Add option to print only the top N characters.
+
+    #[arg(short = 'n', long, help = "Show only the top N characters")]
+    show_top_n: Option<u32>,
     // TODO: Add option to print only the characters that appear more than N times.
     // TODO: Add option to print only the characters that appear less than N times.
     // TODO: Add option to print only the characters that appear exactly N times.
+    // TODO: Make a single enum type that captures all these print styles.
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -63,6 +66,11 @@ fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         for (char, count) in counter {
             let percent = (*count as f64 / total) * 100.0;
             println!("{}: {:.2}", char, percent);
+        }
+    } else if args.show_top_n.is_some() {
+        let n = args.show_top_n.unwrap();
+        for (char, count) in counter.take(n as usize) {
+            println!("{}: {}", char, count);
         }
     } else {
         for (char, count) in counter {
